@@ -123,8 +123,15 @@ def show(body: str):
 
 def load(url: str = "file:///public/index.html"):
     # This will download the resource from the remote server
+    view_source = False
+    if url.startswith("view-source:"):
+        view_source = True
+        url = url.replace("view-source:", "")
     headers, body = request(url)
-    show(body)
+    if view_source == False:
+        show(body)
+    else:
+        print(body)
 
 
 if __name__ == "__main__":
