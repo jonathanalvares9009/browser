@@ -35,7 +35,8 @@ def request(url):
 
     # Python telnet to download the resource
     s.send("GET {} HTTP/1.0\r\n".format(path).encode("utf8") +
-           "Host: {}\r\n\r\n".format(host).encode("utf8"))
+           "Host: {}\r\n".format(host).encode("utf8") +
+           "Connection: {}\r\n\r\n".format("close").encode("utf8"))
 
     # The response we got from the server
     response = s.makefile("r", encoding="utf8", newline="\r\n")
