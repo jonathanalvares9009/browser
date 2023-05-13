@@ -34,9 +34,10 @@ def request(url):
         s = ctx.wrap_socket(s, server_hostname=host)
 
     # Python telnet to download the resource
-    s.send("GET {} HTTP/1.0\r\n".format(path).encode("utf8") +
+    s.send("GET {} HTTP/1.1\r\n".format(path).encode("utf8") +
            "Host: {}\r\n".format(host).encode("utf8") +
-           "Connection: {}\r\n\r\n".format("close").encode("utf8"))
+           "Connection: {}\r\n".format("close").encode("utf8") +
+           "User-Agent: {}\r\n\r\n".format("Toy Browser").encode("utf8"))
 
     # The response we got from the server
     response = s.makefile("r", encoding="utf8", newline="\r\n")
@@ -77,7 +78,8 @@ def show(body):
 def load(url):
     # This will download the resource from the remote server
     headers, body = request(url)
-    show(body)
+    # show(body)
+    print(headers)
 
 
 if __name__ == "__main__":
