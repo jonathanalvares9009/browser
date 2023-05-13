@@ -59,13 +59,18 @@ def request_file(path: str):
     file = open(path, 'r')
     body = file.read()
     headers = {
-        "request": "GET",
+        "method": "GET",
         "Content-Type": "file"
     }
     return dumps(headers), body
 
 
 def request(url: str):
+    # Allows inlining HTML content into the URL itself
+    if url.startswith("data:"):
+        headers = dumps({"method": "GET"})
+        body = url.split(",")[1]
+        return headers, body
     # Finds the scheme
     scheme, url = url.split("://", 1)
     assert scheme in ["http", "https", "file"], \
