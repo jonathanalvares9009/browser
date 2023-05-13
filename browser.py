@@ -65,7 +65,7 @@ def request_file(path: str):
     return dumps(headers), body
 
 
-def request(url):
+def request(url: str):
     # Finds the scheme
     scheme, url = url.split("://", 1)
     assert scheme in ["http", "https", "file"], \
@@ -80,7 +80,7 @@ def request(url):
     return request_file(path)
 
 
-def show(body):
+def show(body: str):
     # Removes the tags and displays the rest
     in_angle = False
     for c in body:
@@ -92,7 +92,7 @@ def show(body):
             print(c, end="")
 
 
-def load(url):
+def load(url: str = "file:///public/index.html"):
     # This will download the resource from the remote server
     headers, body = request(url)
     show(body)
@@ -100,4 +100,7 @@ def load(url):
 
 if __name__ == "__main__":
     import sys
-    load(sys.argv[1])
+    if len(sys.argv) > 1:
+        load(sys.argv[1])
+    else:
+        load()
