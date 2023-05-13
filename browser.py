@@ -88,9 +88,12 @@ def request(url: str):
 def show(body: str):
     # Removes the tags and displays the rest
     tags = []
+    entities = {"&lt;": "<", "&gt;": ">"}
     in_angle = False
     in_body = False
+    in_entity = False
     tag = ""
+    entity = ""
     for c in body:
         if c == "<":
             in_angle = True
@@ -104,6 +107,16 @@ def show(body: str):
             in_angle = False
         elif in_angle:
             tag = tag + c
+        elif c == "&":
+            in_entity = True
+            entity = entity + c
+        elif c == ";":
+            in_entity = False
+            entity = entity + c
+            print(entities[entity], end="")
+            entity = ""
+        elif in_entity:
+            entity = entity + c
         elif not in_angle and in_body:
             print(c, end="")
 
