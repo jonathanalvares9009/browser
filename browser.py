@@ -1,5 +1,6 @@
 import socket
 import ssl
+from json import dumps
 
 
 def request_remote_resource(path: str, scheme: str, host: str):
@@ -54,18 +55,29 @@ def request_remote_resource(path: str, scheme: str, host: str):
     return headers, body
 
 
+def request_file(path: str):
+    file = open(path, 'r')
+    body = file.read()
+    headers = {
+        "request": "GET",
+        "Content-Type": "file"
+    }
+    return dumps(headers), body
+
+
 def request(url):
     # Finds the scheme
     scheme, url = url.split("://", 1)
-    assert scheme in ["http", "https"], \
+    assert scheme in ["http", "https", "file"], \
         "Unknown scheme {}".format(scheme)
 
     # Get the host and the path
     host, path = url.split("/", 1)
-    path = "/" + path
 
     if scheme in ["http", "https"]:
+        path = "/" + path
         return request_remote_resource(path, scheme, host)
+    return request_file(path)
 
 
 def show(body):
