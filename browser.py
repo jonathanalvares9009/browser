@@ -78,8 +78,7 @@ def show(body):
 def load(url):
     # This will download the resource from the remote server
     headers, body = request(url)
-    # show(body)
-    print(headers)
+    show(body)
 
 
 if __name__ == "__main__":
