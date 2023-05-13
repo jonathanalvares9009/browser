@@ -2,16 +2,7 @@ import socket
 import ssl
 
 
-def request(url):
-    # Finds the scheme
-    scheme, url = url.split("://", 1)
-    assert scheme in ["http", "https"], \
-        "Unknown scheme {}".format(scheme)
-
-    # Get the host and the path
-    host, path = url.split("/", 1)
-    path = "/" + path
-
+def request_remote_resource(path: str, scheme: str, host: str):
     # http => 80, https => 443
     port = 80 if scheme == "http" else 443
 
@@ -61,6 +52,20 @@ def request(url):
     s.close()
 
     return headers, body
+
+
+def request(url):
+    # Finds the scheme
+    scheme, url = url.split("://", 1)
+    assert scheme in ["http", "https"], \
+        "Unknown scheme {}".format(scheme)
+
+    # Get the host and the path
+    host, path = url.split("/", 1)
+    path = "/" + path
+
+    if scheme in ["http", "https"]:
+        return request_remote_resource(path, scheme, host)
 
 
 def show(body):
