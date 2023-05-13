@@ -87,13 +87,24 @@ def request(url: str):
 
 def show(body: str):
     # Removes the tags and displays the rest
+    tags = []
     in_angle = False
+    in_body = False
+    tag = ""
     for c in body:
         if c == "<":
             in_angle = True
         elif c == ">":
+            tags.append(tag)
+            if tag == "body":
+                in_body = True
+            elif tag == "/body":
+                in_body = False
+            tag = ""
             in_angle = False
-        elif not in_angle:
+        elif in_angle:
+            tag = tag + c
+        elif not in_angle and in_body:
             print(c, end="")
 
 
