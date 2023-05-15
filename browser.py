@@ -38,12 +38,16 @@ def request_remote_resource(path: str, scheme: str, host: str):
 
     # Check if the response is compressed
     is_compressed = False
-    headers = []
+    headers = {}
     while True:
         line = response.readline()
         if line == b"\r\n" or line == b"\n":
             break
-        headers.append(line.decode("utf8"))
+        header = line.decode("utf8").rstrip("\r\n").split(":", 1)
+        if len(header) == 2:
+            headers[header[0]] = header[1]
+        else:
+            statusline = header[0]
         if line.startswith(b"Content-Encoding:") and b"gzip" in line:
             is_compressed = True
 
@@ -56,7 +60,6 @@ def request_remote_resource(path: str, scheme: str, host: str):
 
     content = content.decode("utf8")
 
-    statusline = headers[0]
     version, status, explanation = statusline.split(" ", 2)
     assert status == "200", "{}: {}".format(status, explanation)
 
