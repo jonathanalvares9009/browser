@@ -1,5 +1,6 @@
 import socket
 import ssl
+import gzip
 from json import dumps
 
 
@@ -25,31 +26,44 @@ def request_remote_resource(path: str, scheme: str, host: str):
         ctx = ssl.create_default_context()
         s = ctx.wrap_socket(s, server_hostname=host)
 
-    # Python telnet to download the resource
+    # Send the HTTP request
     s.send("GET {} HTTP/1.1\r\n".format(path).encode("utf8") +
            "Host: {}\r\n".format(host).encode("utf8") +
            "Connection: {}\r\n".format("close").encode("utf8") +
-           "User-Agent: {}\r\n\r\n".format("Toy Browser").encode("utf8"))
+           "User-Agent: {}\r\n".format("Toy Browser").encode("utf8") +
+           "Accept-Encoding: {}\r\n\r\n".format("gzip").encode("utf8"))
 
     # The response we got from the server
-    response = s.makefile("r", encoding="utf8", newline="\r\n")
+    response = s.makefile("rb")
 
-    statusline = response.readline()
-    version, status, explanation = statusline.split(" ", 2)
-    assert status == "200", "{}: {}".format(status, explanation)
-
-    headers = {}
+    # Check if the response is compressed
+    is_compressed = False
+    headers = []
     while True:
         line = response.readline()
-        if line == "\r\n":
+        if line == b"\r\n" or line == b"\n":
             break
-        header, value = line.split(":", 1)
-        headers[header.lower()] = value.strip()
+        headers.append(line.decode("utf8"))
+        if line.startswith(b"Content-Encoding:") and b"gzip" in line:
+            is_compressed = True
+
+    if is_compressed:
+        decompressed_data = gzip.GzipFile(fileobj=response)
+        content = decompressed_data.read(1024)
+    else:
+        # Read and handle the uncompressed content
+        content = response.read()
+
+    content = content.decode("utf8")
+
+    statusline = headers[0]
+    version, status, explanation = statusline.split(" ", 2)
+    assert status == "200", "{}: {}".format(status, explanation)
 
     assert "transfer-encoding" not in headers
     assert "content-encoding" not in headers
 
-    body = response.read()
+    body = content
     s.close()
 
     return headers, body
