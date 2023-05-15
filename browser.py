@@ -110,7 +110,7 @@ def show(body: str):
         elif c == "&":
             in_entity = True
             entity = entity + c
-        elif c == ";":
+        elif c == ";" and in_entity:
             in_entity = False
             entity = entity + c
             print(entities[entity], end="")
