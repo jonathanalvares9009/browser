@@ -51,6 +51,13 @@ def request_remote_resource(path: str, scheme: str, host: str):
         if line.startswith(b"Content-Encoding:") and b"gzip" in line:
             is_compressed = True
 
+    is_chunked = False
+    try:
+        if headers["Transfer-Encoding"] == "chunked":
+            is_chunked = True
+    except KeyError:
+        is_chunked = False
+
     if is_compressed:
         decompressed_data = gzip.GzipFile(fileobj=response)
         content = decompressed_data.read(1024)
