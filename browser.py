@@ -4,7 +4,7 @@ import gzip
 from json import dumps
 
 
-def request_remote_resource(path: str, scheme: str, host: str):
+def request_remote_resource(path: str, scheme: str, host: str, num_of_reqs=5):
     # http => 80, https => 443
     port = 80 if scheme == "http" else 443
 
@@ -88,6 +88,19 @@ def request_remote_resource(path: str, scheme: str, host: str):
     content = content.decode("utf8")
 
     version, status, explanation = statusline.split(" ", 2)
+
+    if int(status) >= 300 and int(status) <= 400:
+        location = headers["Location"]
+        # Find the index of the first occurrence of "//"
+        double_slash_index = location.find("//")
+        # Find the index of the next slash ("/") after the double slash
+        next_slash_index = location.find("/", double_slash_index + 2)
+        # Extract the path part of the URL
+        path = location[next_slash_index:]
+
+        if num_of_reqs >= 0:
+            return request_remote_resource(path, scheme, host, num_of_reqs - 1)
+
     assert status == "200", "{}: {}".format(status, explanation)
 
     assert "transfer-encoding" not in headers
