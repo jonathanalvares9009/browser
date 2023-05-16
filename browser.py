@@ -45,7 +45,7 @@ def request_remote_resource(path: str, scheme: str, host: str):
             break
         header = line.decode("utf8").rstrip("\r\n").split(":", 1)
         if len(header) == 2:
-            headers[header[0]] = header[1]
+            headers[header[0]] = header[1].strip()
         else:
             statusline = header[0]
         if line.startswith(b"Content-Encoding:") and b"gzip" in line:
@@ -58,7 +58,27 @@ def request_remote_resource(path: str, scheme: str, host: str):
     except KeyError:
         is_chunked = False
 
-    if is_compressed:
+    if is_chunked and is_compressed:
+        decompressed_data = b""
+        while True:
+            # Read the chunk size line
+            chunk_size_line = response.readline().strip()
+            if not chunk_size_line:
+                break
+            chunk_size = int(chunk_size_line, 16)
+
+            # Read the chunk
+            chunk = response.read(chunk_size)
+
+            # Decompress the chunk using gzip
+            decompressed_chunk = gzip.decompress(chunk)
+            decompressed_data += decompressed_chunk
+
+            # Consume the trailing CRLF after the chunk
+            response.readline()
+
+        content = decompressed_data
+    elif is_compressed:
         decompressed_data = gzip.GzipFile(fileobj=response)
         content = decompressed_data.read(1024)
     else:
@@ -137,7 +157,10 @@ def show(body: str):
         elif c == ";" and in_entity:
             in_entity = False
             entity = entity + c
-            print(entities[entity], end="")
+            try:
+                print(entities[entity], end="")
+            except KeyError:
+                print("", end="")
             entity = ""
         elif in_entity:
             entity = entity + c
