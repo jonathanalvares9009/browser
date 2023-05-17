@@ -142,7 +142,7 @@ def request(url: str):
     return request_file(path)
 
 
-def show(body: str):
+def lex(body: str):
     # Removes the tags and displays the rest
     tags = []
     entities = {"&lt;": "<", "&gt;": ">"}
@@ -151,6 +151,7 @@ def show(body: str):
     in_entity = False
     tag = ""
     entity = ""
+    text = ""
     for c in body:
         if c == "<":
             in_angle = True
@@ -171,14 +172,15 @@ def show(body: str):
             in_entity = False
             entity = entity + c
             try:
-                print(entities[entity], end="")
+                text += entities[entity]
             except KeyError:
-                print("", end="")
+                text += ""
             entity = ""
         elif in_entity:
             entity = entity + c
         elif not in_angle and in_body:
-            print(c, end="")
+            text += c
+    return text
 
 
 def load(url: str = "file:///public/index.html"):
@@ -189,7 +191,7 @@ def load(url: str = "file:///public/index.html"):
         url = url.replace("view-source:", "")
     headers, body = request(url)
     if view_source == False:
-        show(body)
+        print(lex(body))
     else:
         print(body)
 
