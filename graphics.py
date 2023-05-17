@@ -2,6 +2,7 @@ import tkinter
 import browser
 
 WIDTH, HEIGHT = 800, 600
+SCROLL_STEP = 100
 
 
 def layout(text):
@@ -26,9 +27,20 @@ class Browser:
             height=HEIGHT
         )
         self.canvas.pack()
-        self.scroll = 100
+        self.scroll = 0
+        self.window.bind("<Down>", self.scrolldown)
+        self.window.bind("<Up>", self.scrollup)
+
+    def scrolldown(self, e):
+        self.scroll += SCROLL_STEP
+        self.draw()
+
+    def scrollup(self, e):
+        self.scroll -= SCROLL_STEP
+        self.draw()
 
     def draw(self):
+        self.canvas.delete("all")
         for x, y, c in self.display_list:
             self.canvas.create_text(x, y - self.scroll, text=c)
 
