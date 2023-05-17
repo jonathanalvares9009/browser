@@ -26,10 +26,11 @@ class Browser:
             height=HEIGHT
         )
         self.canvas.pack()
+        self.scroll = 100
 
     def draw(self):
         for x, y, c in self.display_list:
-            self.canvas.create_text(x, y, text=c)
+            self.canvas.create_text(x, y - self.scroll, text=c)
 
     def load(self, url):
         headers, body = browser.request(url)
