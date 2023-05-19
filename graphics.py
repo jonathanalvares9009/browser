@@ -1,3 +1,4 @@
+import platform
 import tkinter
 import browser
 
@@ -34,6 +35,26 @@ class Browser:
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
+        self.window.bind("<MouseWheel>", self.mouse_scroll)
+
+    def mouse_scroll(self, e):
+        scroll_amount = 0
+        if platform.system() == "Windows":
+            scroll_amount = int(-1 * (e.delta / 120))
+        elif platform.system() == "Darwin":
+            scroll_amount = -1 * e.delta
+
+        if scroll_amount > 0 and scroll_amount <= 3:
+            self.scroll += scroll_amount * 100
+        elif scroll_amount > 0:
+            scroll_amount = 3
+            self.scroll += scroll_amount * 100
+        elif scroll_amount < 0 and scroll_amount >= -3 and self.scroll + scroll_amount * 100 >= 0:
+            self.scroll += scroll_amount * 100
+        elif self.scroll + scroll_amount * 100 >= 0:
+            scroll_amount = -3
+            self.scroll += scroll_amount * 100
+        self.draw()
 
     def scrolldown(self, e):
         self.scroll += SCROLL_STEP
