@@ -1,9 +1,10 @@
 import platform
 import tkinter
+from tkinter import font
 import browser
 
 WIDTH, HEIGHT = 800, 600
-HSTEP, VSTEP = 26, 36
+HSTEP, VSTEP = 32, 37
 SCROLL_STEP = 100
 
 
@@ -28,6 +29,7 @@ class Browser:
         self.window.bind("<Up>", self.scrollup)
         self.window.bind("<MouseWheel>", self.mouse_scroll)
         self.window.bind("<Configure>", self.onresize)
+        self.window.bind("<KeyPress>", self.onkeypress)
 
     def onresize(self, e):
         self.height = e.height
@@ -62,6 +64,19 @@ class Browser:
         if self.scroll - self.scroll_step >= 0:
             self.scroll -= self.scroll_step
             self.draw()
+
+    def onkeypress(self, e):
+        if e.char == '+' and self.font_size + 16 <= 100:
+            self.font_size += 16
+            self.vstep = self.font_size + 5
+            self.hstep = self.font_size
+        elif e.char == '-' and self.font_size - 16 >= 32:
+            self.font_size -= 16
+            self.vstep = self.font_size - 5
+            self.hstep = self.font_size
+
+        self.display_list = self.layout()
+        self.draw()
 
     def layout(self):
         display_list = []
