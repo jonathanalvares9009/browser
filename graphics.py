@@ -55,27 +55,27 @@ class Browser:
         self.draw()
 
     def scrolldown(self, e):
-        self.scroll += SCROLL_STEP
+        self.scroll += self.scroll_step
         self.draw()
 
     def scrollup(self, e):
-        if self.scroll - SCROLL_STEP >= 0:
-            self.scroll -= SCROLL_STEP
+        if self.scroll - self.scroll_step >= 0:
+            self.scroll -= self.scroll_step
             self.draw()
 
     def layout(self):
         display_list = []
-        cursor_x, cursor_y = HSTEP, VSTEP
+        cursor_x, cursor_y = self.hstep, self.vstep
         for c in self.text:
             if c == '\n':
-                cursor_y += VSTEP
-                cursor_x = HSTEP
+                cursor_y += self.vstep
+                cursor_x = self.hstep
                 continue
             display_list.append((cursor_x, cursor_y, c))
-            cursor_x += HSTEP
-            if cursor_x >= self.width - HSTEP:
-                cursor_y += VSTEP
-                cursor_x = HSTEP
+            cursor_x += self.hstep
+            if cursor_x >= self.width - self.hstep:
+                cursor_y += self.vstep
+                cursor_x = self.hstep
         return display_list
 
     def draw(self):
@@ -83,7 +83,7 @@ class Browser:
         for x, y, c in self.display_list:
             if y > self.scroll + self.height:
                 continue
-            if y + VSTEP < self.scroll:
+            if y + self.vstep < self.scroll:
                 continue
             self.canvas.create_text(
                 x, y - self.scroll, text=c, font=("TkDefaultFont", self.font_size))
