@@ -3,30 +3,18 @@ import tkinter
 import browser
 
 WIDTH, HEIGHT = 800, 600
-HSTEP, VSTEP = 13, 18
+HSTEP, VSTEP = 26, 36
 SCROLL_STEP = 100
-
-
-def layout(text, width=WIDTH):
-    display_list = []
-    cursor_x, cursor_y = HSTEP, VSTEP
-    for c in text:
-        if c == '\n':
-            cursor_y += VSTEP
-            cursor_x = HSTEP
-            continue
-        display_list.append((cursor_x, cursor_y, c))
-        cursor_x += HSTEP
-        if cursor_x >= width - HSTEP:
-            cursor_y += VSTEP
-            cursor_x = HSTEP
-    return display_list
 
 
 class Browser:
     def __init__(self):
         self.height = HEIGHT
         self.width = WIDTH
+        self.hstep = HSTEP
+        self.vstep = VSTEP
+        self.scroll_step = SCROLL_STEP
+        self.font_size = 32
         self.text = ""
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(
@@ -44,7 +32,7 @@ class Browser:
     def onresize(self, e):
         self.height = e.height
         self.width = e.width
-        self.display_list = layout(self.text, self.width)
+        self.display_list = self.layout()
         self.draw()
 
     def mouse_scroll(self, e):
@@ -75,6 +63,21 @@ class Browser:
             self.scroll -= SCROLL_STEP
             self.draw()
 
+    def layout(self):
+        display_list = []
+        cursor_x, cursor_y = HSTEP, VSTEP
+        for c in self.text:
+            if c == '\n':
+                cursor_y += VSTEP
+                cursor_x = HSTEP
+                continue
+            display_list.append((cursor_x, cursor_y, c))
+            cursor_x += HSTEP
+            if cursor_x >= self.width - HSTEP:
+                cursor_y += VSTEP
+                cursor_x = HSTEP
+        return display_list
+
     def draw(self):
         self.canvas.delete("all")
         for x, y, c in self.display_list:
@@ -82,13 +85,14 @@ class Browser:
                 continue
             if y + VSTEP < self.scroll:
                 continue
-            self.canvas.create_text(x, y - self.scroll, text=c)
+            self.canvas.create_text(
+                x, y - self.scroll, text=c, font=("TkDefaultFont", self.font_size))
 
     def load(self, url):
         headers, body = browser.request(url)
         text = browser.lex(body)
         self.text = text
-        self.display_list = layout(self.text)
+        self.display_list = self.layout()
         self.draw()
 
 
