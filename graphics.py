@@ -23,6 +23,12 @@ class Browser:
             width=self.width,
             height=self.height
         )
+        self.font = tkinter.font.Font(
+            family="Times",
+            size=16,
+            weight="bold",
+            slant="italic",
+        )
         self.canvas.pack(fill=tkinter.BOTH, expand=True)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
@@ -81,16 +87,13 @@ class Browser:
     def layout(self):
         display_list = []
         cursor_x, cursor_y = self.hstep, self.vstep
-        for c in self.text:
-            if c == '\n':
-                cursor_y += self.vstep
-                cursor_x = self.hstep
-                continue
-            display_list.append((cursor_x, cursor_y, c))
-            cursor_x += self.hstep
-            if cursor_x >= self.width - self.hstep:
-                cursor_y += self.vstep
-                cursor_x = self.hstep
+        for word in self.text.split():
+            w = self.font.measure(word)
+            if cursor_x + w > WIDTH - HSTEP:
+                cursor_y += self.font.metrics("linespace") * 1.25
+                cursor_x = HSTEP
+            display_list.append((cursor_x, cursor_y, word))
+            cursor_x += w + self.font.measure(" ")
         return display_list
 
     def draw(self):
@@ -100,14 +103,8 @@ class Browser:
                 continue
             if y + self.vstep < self.scroll:
                 continue
-            bi_times = tkinter.font.Font(
-                family="Times",
-                size=16,
-                weight="bold",
-                slant="italic",
-            )
             self.canvas.create_text(
-                x, y - self.scroll, text=c, font=bi_times)
+                x, y - self.scroll, text=c, font=self.font, anchor='nw')
 
     def load(self, url):
         headers, body = browser.request(url)
