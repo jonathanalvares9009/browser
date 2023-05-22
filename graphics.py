@@ -4,7 +4,7 @@ from tkinter import font
 import browser
 
 WIDTH, HEIGHT = 800, 600
-HSTEP, VSTEP = 32, 37
+HSTEP, VSTEP = 16, 21
 SCROLL_STEP = 100
 
 
@@ -100,8 +100,14 @@ class Browser:
                 continue
             if y + self.vstep < self.scroll:
                 continue
+            bi_times = tkinter.font.Font(
+                family="Times",
+                size=16,
+                weight="bold",
+                slant="italic",
+            )
             self.canvas.create_text(
-                x, y - self.scroll, text=c, font=("TkDefaultFont", self.font_size))
+                x, y - self.scroll, text=c, font=bi_times)
 
     def load(self, url):
         headers, body = browser.request(url)
