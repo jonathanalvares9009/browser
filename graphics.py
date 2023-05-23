@@ -88,6 +88,8 @@ class Browser:
         display_list = []
         cursor_x, cursor_y = self.hstep, self.vstep
         in_body = False
+        weight = "normal"
+        style = "roman"
         for token in self.tokens:
             if isinstance(token, browser.Text) and in_body:
                 for word in token.text.split():
@@ -97,10 +99,18 @@ class Browser:
                         cursor_x = HSTEP
                     display_list.append((cursor_x, cursor_y, word))
                     cursor_x += w + self.font.measure(" ")
-            elif isinstance(token, browser.Tag) and token.tag == "body":
+            elif token.tag == "body":
                 in_body = True
-            elif isinstance(token, browser.Tag) and token.tag == "/body":
+            elif token.tag == "/body":
                 in_body = False
+            elif token.tag == "i":
+                style = "italic"
+            elif token.tag == "/i":
+                style = "roman"
+            elif token.tag == "b":
+                weight = "bold"
+            elif token.tag == "/b":
+                weight = "normal"
         return display_list
 
     def draw(self):
