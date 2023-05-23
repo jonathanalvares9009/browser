@@ -16,7 +16,7 @@ class Browser:
         self.vstep = VSTEP
         self.scroll_step = SCROLL_STEP
         self.font_size = 32
-        self.text = ""
+        self.tokens = []
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(
             self.window,
@@ -87,13 +87,20 @@ class Browser:
     def layout(self):
         display_list = []
         cursor_x, cursor_y = self.hstep, self.vstep
-        for word in self.text.split():
-            w = self.font.measure(word)
-            if cursor_x + w > WIDTH - HSTEP:
-                cursor_y += self.font.metrics("linespace") * 1.25
-                cursor_x = HSTEP
-            display_list.append((cursor_x, cursor_y, word))
-            cursor_x += w + self.font.measure(" ")
+        in_body = False
+        for token in self.tokens:
+            if isinstance(token, browser.Text) and in_body:
+                for word in token.text.split():
+                    w = self.font.measure(word)
+                    if cursor_x + w > WIDTH - HSTEP:
+                        cursor_y += self.font.metrics("linespace") * 1.25
+                        cursor_x = HSTEP
+                    display_list.append((cursor_x, cursor_y, word))
+                    cursor_x += w + self.font.measure(" ")
+            elif isinstance(token, browser.Tag) and token.tag == "body":
+                in_body = True
+            elif isinstance(token, browser.Tag) and token.tag == "/body":
+                in_body = False
         return display_list
 
     def draw(self):
@@ -108,8 +115,8 @@ class Browser:
 
     def load(self, url):
         headers, body = browser.request(url)
-        text = browser.lex(body)
-        self.text = text
+        tokens = browser.lex(body)
+        self.tokens = tokens
         self.display_list = self.layout()
         self.draw()
 
