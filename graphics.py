@@ -23,12 +23,6 @@ class Browser:
             width=self.width,
             height=self.height
         )
-        self.font = tkinter.font.Font(
-            family="Times",
-            size=16,
-            weight="bold",
-            slant="italic",
-        )
         self.canvas.pack(fill=tkinter.BOTH, expand=True)
         self.scroll = 0
         self.window.bind("<Down>", self.scrolldown)
@@ -93,35 +87,40 @@ class Browser:
         for token in self.tokens:
             if isinstance(token, browser.Text) and in_body:
                 for word in token.text.split():
-                    w = self.font.measure(word)
+                    font = tkinter.font.Font(
+                        size=16,
+                        weight=weight,
+                        slant=style,
+                    )
+                    w = font.measure(word)
                     if cursor_x + w > WIDTH - HSTEP:
-                        cursor_y += self.font.metrics("linespace") * 1.25
+                        cursor_y += font.metrics("linespace") * 1.25
                         cursor_x = HSTEP
-                    display_list.append((cursor_x, cursor_y, word))
-                    cursor_x += w + self.font.measure(" ")
-            elif token.tag == "body":
+                    display_list.append((cursor_x, cursor_y, word, font))
+                    cursor_x += w + font.measure(" ")
+            elif isinstance(token, browser.Tag) and token.tag == "body":
                 in_body = True
-            elif token.tag == "/body":
+            elif isinstance(token, browser.Tag) and token.tag == "/body":
                 in_body = False
-            elif token.tag == "i":
+            elif isinstance(token, browser.Tag) and token.tag == "i":
                 style = "italic"
-            elif token.tag == "/i":
+            elif isinstance(token, browser.Tag) and token.tag == "/i":
                 style = "roman"
-            elif token.tag == "b":
+            elif isinstance(token, browser.Tag) and token.tag == "b":
                 weight = "bold"
-            elif token.tag == "/b":
+            elif isinstance(token, browser.Tag) and token.tag == "/b":
                 weight = "normal"
         return display_list
 
     def draw(self):
         self.canvas.delete("all")
-        for x, y, c in self.display_list:
+        for x, y, c, s in self.display_list:
             if y > self.scroll + self.height:
                 continue
             if y + self.vstep < self.scroll:
                 continue
             self.canvas.create_text(
-                x, y - self.scroll, text=c, font=self.font, anchor='nw')
+                x, y - self.scroll, text=c, font=s, anchor='nw')
 
     def load(self, url):
         headers, body = browser.request(url)
