@@ -2,6 +2,7 @@ import socket
 import ssl
 import gzip
 from json import dumps
+from dataclasses import dataclass
 
 
 def request_remote_resource(path: str, scheme: str, host: str, num_of_reqs=5):
@@ -122,6 +123,16 @@ def request_file(path: str):
     return dumps(headers), body
 
 
+@dataclass
+class Text:
+    text: str
+
+
+@dataclass
+class Tag:
+    tag: str
+
+
 def request(url: str):
     # Allows inlining HTML content into the URL itself
     if url.startswith("data:"):
@@ -143,44 +154,25 @@ def request(url: str):
 
 
 def lex(body: str):
-    # Removes the tags and displays the rest
-    tags = []
-    entities = {"&lt;": "<", "&gt;": ">"}
-    in_angle = False
-    in_body = False
-    in_entity = False
-    tag = ""
-    entity = ""
+    # Separates everything into text and tags
+    out = []
     text = ""
+    in_tag = False
     for c in body:
         if c == "<":
-            in_angle = True
+            in_tag = True
+            if text:
+                out.append(Text(text))
+            text = ""
         elif c == ">":
-            tags.append(tag)
-            if tag == "body":
-                in_body = True
-            elif tag == "/body":
-                in_body = False
-            tag = ""
-            in_angle = False
-        elif in_angle:
-            tag = tag + c
-        elif c == "&":
-            in_entity = True
-            entity = entity + c
-        elif c == ";" and in_entity:
-            in_entity = False
-            entity = entity + c
-            try:
-                text += entities[entity]
-            except KeyError:
-                text += ""
-            entity = ""
-        elif in_entity:
-            entity = entity + c
-        elif not in_angle and in_body:
+            in_tag = False
+            out.append(Tag(text))
+            text = ""
+        else:
             text += c
-    return text
+    if not in_tag and text:
+        out.append(Text(text))
+    return out
 
 
 def load(url: str = "file:///public/index.html"):
