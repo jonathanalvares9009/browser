@@ -8,6 +8,49 @@ HSTEP, VSTEP = 16, 21
 SCROLL_STEP = 100
 
 
+class Layout:
+    def __init__(self, tokens):
+        self.display_list = []
+        self.cursor_x = HSTEP
+        self.cursor_y = VSTEP
+        self.weight = "normal"
+        self.style = "roman"
+        self.size = 16
+        for tok in tokens:
+            self.token(tok)
+
+    def token(self, tok):
+        for token in self.tokens:
+            if isinstance(token, browser.Text) and in_body:
+                text(token)
+            elif isinstance(token, browser.Tag) and token.tag == "body":
+                in_body = True
+            elif isinstance(token, browser.Tag) and token.tag == "/body":
+                in_body = False
+            elif isinstance(token, browser.Tag) and token.tag == "i":
+                style = "italic"
+            elif isinstance(token, browser.Tag) and token.tag == "/i":
+                style = "roman"
+            elif isinstance(token, browser.Tag) and token.tag == "b":
+                weight = "bold"
+            elif isinstance(token, browser.Tag) and token.tag == "/b":
+                weight = "normal"
+
+        def text(self, tok):
+            for word in tok.text.split():
+                font = tkinter.font.Font(
+                    size=16,
+                    weight=weight,
+                    slant=style,
+                )
+                w = font.measure(word)
+                if cursor_x + w > WIDTH - HSTEP:
+                    cursor_y += font.metrics("linespace") * 1.25
+                    cursor_x = HSTEP
+                self.display_list.append((cursor_x, cursor_y, word, font))
+                cursor_x += w + font.measure(" ")
+
+
 class Browser:
     def __init__(self):
         self.height = HEIGHT
