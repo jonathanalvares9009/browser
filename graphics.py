@@ -15,40 +15,41 @@ class Layout:
         self.cursor_y = VSTEP
         self.weight = "normal"
         self.style = "roman"
+        self.in_body = False
         self.size = 16
         for tok in tokens:
             self.token(tok)
 
-    def token(self, tok):
-        for token in self.tokens:
-            if isinstance(token, browser.Text) and in_body:
-                text(token)
-            elif isinstance(token, browser.Tag) and token.tag == "body":
-                in_body = True
-            elif isinstance(token, browser.Tag) and token.tag == "/body":
-                in_body = False
-            elif isinstance(token, browser.Tag) and token.tag == "i":
-                style = "italic"
-            elif isinstance(token, browser.Tag) and token.tag == "/i":
-                style = "roman"
-            elif isinstance(token, browser.Tag) and token.tag == "b":
-                weight = "bold"
-            elif isinstance(token, browser.Tag) and token.tag == "/b":
-                weight = "normal"
+    def token(self, token):
+        if isinstance(token, browser.Text) and self.in_body:
+            self.text(token)
+        elif isinstance(token, browser.Tag) and token.tag == "body":
+            self.in_body = True
+        elif isinstance(token, browser.Tag) and token.tag == "/body":
+            in_body = False
+        elif isinstance(token, browser.Tag) and token.tag == "i":
+            self.style = "italic"
+        elif isinstance(token, browser.Tag) and token.tag == "/i":
+            self.style = "roman"
+        elif isinstance(token, browser.Tag) and token.tag == "b":
+            self.weight = "bold"
+        elif isinstance(token, browser.Tag) and token.tag == "/b":
+            self.weight = "normal"
 
-        def text(self, tok):
-            for word in tok.text.split():
-                font = tkinter.font.Font(
-                    size=16,
-                    weight=weight,
-                    slant=style,
-                )
-                w = font.measure(word)
-                if cursor_x + w > WIDTH - HSTEP:
-                    cursor_y += font.metrics("linespace") * 1.25
-                    cursor_x = HSTEP
-                self.display_list.append((cursor_x, cursor_y, word, font))
-                cursor_x += w + font.measure(" ")
+    def text(self, tok):
+        for word in tok.text.split():
+            font = tkinter.font.Font(
+                size=16,
+                weight=self.weight,
+                slant=self.style,
+            )
+            w = font.measure(word)
+            if self.cursor_x + w > WIDTH - HSTEP:
+                self.cursor_y += font.metrics("linespace") * 1.25
+                self.cursor_x = HSTEP
+            self.display_list.append(
+                (self.cursor_x, self.cursor_y, word, font))
+            self.cursor_x += w + font.measure(" ")
 
 
 class Browser:
@@ -121,40 +122,6 @@ class Browser:
         self.display_list = self.layout()
         self.draw()
 
-    def layout(self):
-        display_list = []
-        cursor_x, cursor_y = self.hstep, self.vstep
-        in_body = False
-        weight = "normal"
-        style = "roman"
-        for token in self.tokens:
-            if isinstance(token, browser.Text) and in_body:
-                for word in token.text.split():
-                    font = tkinter.font.Font(
-                        size=16,
-                        weight=weight,
-                        slant=style,
-                    )
-                    w = font.measure(word)
-                    if cursor_x + w > WIDTH - HSTEP:
-                        cursor_y += font.metrics("linespace") * 1.25
-                        cursor_x = HSTEP
-                    display_list.append((cursor_x, cursor_y, word, font))
-                    cursor_x += w + font.measure(" ")
-            elif isinstance(token, browser.Tag) and token.tag == "body":
-                in_body = True
-            elif isinstance(token, browser.Tag) and token.tag == "/body":
-                in_body = False
-            elif isinstance(token, browser.Tag) and token.tag == "i":
-                style = "italic"
-            elif isinstance(token, browser.Tag) and token.tag == "/i":
-                style = "roman"
-            elif isinstance(token, browser.Tag) and token.tag == "b":
-                weight = "bold"
-            elif isinstance(token, browser.Tag) and token.tag == "/b":
-                weight = "normal"
-        return display_list
-
     def draw(self):
         self.canvas.delete("all")
         for x, y, c, s in self.display_list:
@@ -169,7 +136,7 @@ class Browser:
         headers, body = browser.request(url)
         tokens = browser.lex(body)
         self.tokens = tokens
-        self.display_list = self.layout()
+        self.display_list = Layout(tokens).display_list
         self.draw()
 
 
