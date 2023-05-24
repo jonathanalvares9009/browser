@@ -35,11 +35,19 @@ class Layout:
             self.weight = "bold"
         elif isinstance(token, browser.Tag) and token.tag == "/b":
             self.weight = "normal"
+        elif isinstance(token, browser.Tag) and token.tag == "small":
+            self.size -= 2
+        elif isinstance(token, browser.Tag) and token.tag == "/small":
+            self.size += 2
+        elif isinstance(token, browser.Tag) and token.tag == "big":
+            self.size += 4
+        elif isinstance(token, browser.Tag) and token.tag == "/big":
+            self.size -= 4
 
     def text(self, tok):
         for word in tok.text.split():
             font = tkinter.font.Font(
-                size=16,
+                size=self.size,
                 weight=self.weight,
                 slant=self.style,
             )
