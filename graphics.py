@@ -6,6 +6,15 @@ import browser
 WIDTH, HEIGHT = 800, 600
 HSTEP, VSTEP = 16, 21
 SCROLL_STEP = 100
+FONTS = {}
+
+
+def get_font(size, weight, slant):
+    key = (size, weight, slant)
+    if key not in FONTS:
+        font = tkinter.font.Font(size=size, weight=weight, slant=slant)
+        FONTS[key] = font
+    return FONTS[key]
 
 
 class Layout:
@@ -53,11 +62,7 @@ class Layout:
 
     def text(self, tok):
         for word in tok.text.split():
-            font = tkinter.font.Font(
-                size=self.size,
-                weight=self.weight,
-                slant=self.style,
-            )
+            font = get_font(self.size, self.weight, self.style)
             w = font.measure(word)
             if self.cursor_x + w > WIDTH - HSTEP:
                 self.cursor_y += font.metrics("linespace") * 1.25
